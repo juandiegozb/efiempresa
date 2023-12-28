@@ -1,3 +1,83 @@
+# Instalación proyecto
+
+### \*\*\*Si falla algo, por favor, me lo comentan y puedo guiar, depronto me salte algo\*\*\*
+
+_La aplicación está desarrollada en php 8.2 laravel 10.* postgresql 12 y Docker Usa Laravel Passport para las autenticaciones OAUTH 
+Las configuraciones de Docker están en el Dockerfile y en el docker-compose.yml 
+dado el caso ejecutar los comandos:_ 
+
+`composer install`
+
+`docker-compose up -d --build`
+
+`docker build t efiempresa`
+
+`docker exec efiempresa php artisan migrate`
+
+`docker exec efiempresa php artisan route:cache`
+
+NOTA: como nota adicional y pido disculpas (por tiempo) agregue categorias asociadas al producto, pero no cree el seeder.
+para que funcione todo debemos agregar al menos una categoria para que el producto se pueda guardar ya que al guardar solicita una categoria
+
+`INSERT INTO categories VALUES (null, 'productos aleatorios', now(), now());`
+
+## Modelo Relacional de la base de datos usada
+![carts.png](..%2F..%2Fcarts.png)
+
+COMPARTO EL .env del proyecto: 
+```
+- APP_NAME=efiempresa
+- APP_ENV=local
+- APP_KEY=base64:UCUc2N0lPcyTGDljvOvxgAe4kBJJdpFbLQGwGPsHdfY=
+- APP_DEBUG=true
+- APP_URL=http://localhost
+- LOG_CHANNEL=stack
+- LOG_DEPRECATIONS_CHANNEL=null
+- LOG_LEVEL=debug
+- DB_CONNECTION=pgsql
+- DB_HOST=db
+- DB_PORT=5432
+- DB_DATABASE=efiempresa_db
+- DB_USERNAME=efiempresa
+- DB_PASSWORD=J2a2f56b0@
+- BROADCAST_DRIVER=log
+- CACHE_DRIVER=file
+- FILESYSTEM_DISK=local
+- QUEUE_CONNECTION=sync
+- SESSION_DRIVER=file
+- SESSION_LIFETIME=120
+- MEMCACHED_HOST=127.0.0.1
+- REDIS_HOST=127.0.0.1
+- REDIS_PASSWORD=null
+- REDIS_PORT=6379
+- MAIL_MAILER=smtp
+- MAIL_HOST=mailpit
+- MAIL_PORT=1025
+- MAIL_USERNAME=null
+- MAIL_PASSWORD=null
+- MAIL_ENCRYPTION=null
+- MAIL_FROM_ADDRESS="hello@example.com"
+- MAIL_FROM_NAME="${APP_NAME}"
+- AWS_ACCESS_KEY_ID=
+- AWS_SECRET_ACCESS_KEY=
+- AWS_DEFAULT_REGION=us-east-1
+- AWS_BUCKET=
+- AWS_USE_PATH_STYLE_ENDPOINT=false
+- PUSHER_APP_ID=
+- PUSHER_APP_KEY=
+- PUSHER_APP_SECRET=
+- PUSHER_HOST=
+- PUSHER_PORT=443
+- PUSHER_SCHEME=https
+- PUSHER_APP_CLUSTER=mt1
+- VITE_APP_NAME="${APP_NAME}"
+- VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+- VITE_PUSHER_HOST="${PUSHER_HOST}"
+- VITE_PUSHER_PORT="${PUSHER_PORT}"
+- VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
+- VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+```
+
 # Efiempresa API Documentation
 
 ## Get all Products
