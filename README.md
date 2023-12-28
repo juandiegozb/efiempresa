@@ -22,7 +22,13 @@ para que funcione todo debemos agregar al menos una categoria para que el produc
 `INSERT INTO categories VALUES (null, 'productos aleatorios', now(), now());`
 
 ## Modelo Relacional de la base de datos usada
-![carts.png](..%2F..%2Fcarts.png)
+[![Carts](https://i.ibb.co/8sfSfBc/carts.png)](https://ibb.co/tKvWvhX)
+
+# RESULTADOS:
+
+| Imagen 1                                       | Imagen 2                                       |
+| ---------------------------------------------- | ---------------------------------------------- |
+| [![Prueba 1](https://i.ibb.co/gy1xztT/prueba-1.jpg)](https://ibb.co/8M3H6P5) | [![Prueba 2](https://i.ibb.co/Kj1NdKt/prueba-2.jpg)](https://ibb.co/nsW39PX) |
 
 COMPARTO EL .env del proyecto: 
 ```
