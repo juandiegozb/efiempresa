@@ -29,9 +29,15 @@ Route::group(['prefix' => 'products'], function () {
 
 // Rutas privadas, accesibles SOLO con autenticación
 Route::group(['middleware' => ['auth:api'], 'prefix' => 'products'], function () {
+
+    // ediciones básicas de las rutas sobre los productos
     Route::post('/create', [ProductController::class, 'store'])->name('product.store');
-    Route::put('/update/{id}', [ProductController::class,'update'])->name('product.update');
-    Route::delete('/destroy/{id}', [ProductController::class,'destroy'])->name('product.destroy');
+    Route::put('/update/{productId}', [ProductController::class,'update'])->name('product.update');
+    Route::delete('/destroy/{productId}', [ProductController::class,'destroy'])->name('product.destroy');
+
+    // rutas de productos en el carrito de compras
+    Route::post('/add-to-cart/{productId}', [ProductController::class, 'addProductToCart'])->name('product.addToCart');
+
 });
 
 

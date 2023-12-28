@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\Product;
 use App\Repositories\Product\ProductRepository;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -18,7 +20,8 @@ class ProductController extends Controller
      * Método encargado de listar todos los productos disponibles
      * @author Juan Zambrano <juandiegozb@hotmail.com>
      */
-    public function index() {
+    public function index(): JsonResponse
+    {
 
         $products = $this->productRepository->getAllProductsWithStockGreaterThanZero();
 
@@ -42,12 +45,19 @@ class ProductController extends Controller
             ];
         }
 
+        foreach ($products as &$product) {
+            $product['canPurchase'] = $product['stock'] > 0 && $product['status'];
+            $product['addToCart'] = [
+                'url' => route('product.addToCart', $product['id'])
+            ];
+        }
+
         return response()->json([
             'status' => 'success',
             'total_items' => $totalItems,
             'data' => [
-            'products' => $products,
-            'user_products' => $userProducts,
+                'products' => $products,
+                'user_products' => $userProducts,
             ]
 
         ], 200);
@@ -59,7 +69,8 @@ class ProductController extends Controller
      * SOLO está disponible si existe un usuario autenticado
      * @author Juan Zambrano <juandiegozb@hotmail.com>
      */
-    public function store(Request $request) {
+    public function store(Request $request): JsonResponse
+    {
 
         if (Auth::guard('api')->check()) {
 
@@ -93,7 +104,69 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy($productId) {
+    /**
+     *  Método encargado de agregar un producto al carrito, solo está disponible en productos que no son del usuario autenticado
+     * @param Request $request
+     * @param $productId
+     * @return JsonResponse
+     * @author Juan Zambrano <juandiegozb@hotmail.com>
+     */
+    public function addProductToCart(Request $request, $productId): JsonResponse
+    {
+
+        if (Auth::guard('api')->check()) {
+
+            $product = Product::find($productId);
+
+            if (!$product) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Producto no encontrado.',
+                ], 404);
+            }
+
+            $existingCartItem = Cart::where('user_id', Auth::guard('api')->id())
+                ->where('product_id', $product->id)
+                ->first();
+
+            if ($existingCartItem) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'El producto ya está en el carrito.',
+                ], 400);
+            }
+
+            $cartItem = new Cart([
+                'user_id' => Auth::guard('api')->id(),
+                'product_id' => $product->id,
+                'quantity' => $request->input('quantity', 1),
+            ]);
+
+            $cartItem->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Producto agregado al carrito correctamente.',
+                'cart_item' => $cartItem,
+            ], 201);
+
+        } else {
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No cuenta con permisos para agregar productos al carrito.',
+            ], 403);
+        }
+    }
+
+    /**
+     *  Método encargado de eliminar un recurso, si y solo si el usuario autenticado es el propietario del mismo.
+     * @param $productId
+     * @return JsonResponse
+     * @author Juan Zambrano <juandiegozb@hotmail.com>
+     */
+    public function destroy($productId): JsonResponse
+    {
 
         $product = Product::find($productId);
 
