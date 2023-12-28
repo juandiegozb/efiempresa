@@ -57,12 +57,15 @@ class ProductController extends Controller
             }
         }
 
+        $myCartUrl = Auth::guard('api')->check() ? route('product.viewCart') : '';
+
         return response()->json([
             'status' => 'success',
             'total_items' => $totalItems,
             'data' => [
                 'products' => $products,
                 'user_products' => $userProducts,
+                'my_cart_url' => $myCartUrl,
             ]
 
         ], 200);
@@ -222,6 +225,28 @@ class ProductController extends Controller
         }
     }
 
+    public function viewCart(): JsonResponse
+    {
+        if (Auth::guard('api')->check()) {
+            $user = Auth::guard('api')->user();
+            $cartItems = Cart::where('user_id', $user->id)->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'cart_items' => $cartItems,
+                    'total' => $this->calculateTotalWithTaxes($cartItems),
+                ],
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Usuario no autenticado.',
+            ], 401);
+        }
+    }
+
+
     /**
      *  Método encargado de eliminar un recurso, si y solo si el usuario autenticado es el propietario del mismo.
      * @param int $productId
@@ -254,5 +279,19 @@ class ProductController extends Controller
 
         }
 
+    }
+
+    private function calculateTotalWithTaxes($cartItems): float
+    {
+        $subtotal = $cartItems->sum(function ($item) {
+            return $item->product->price * $item->quantity;
+        });
+
+        $taxRate = 0.1;
+
+        $taxes = $subtotal * $taxRate;
+        $total = $subtotal + $taxes;
+
+        return $total;
     }
 }

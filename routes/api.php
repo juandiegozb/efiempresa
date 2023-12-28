@@ -37,6 +37,7 @@ Route::group(['middleware' => ['auth:api'], 'prefix' => 'products'], function ()
 
     // rutas de productos en el carrito de compras
     Route::post('/add-to-cart/{productId}', [ProductController::class, 'addProductToCart'])->name('product.addToCart');
+    Route::get('/cart', [ProductController::class, 'viewCart'])->name('product.viewCart');
 
 });
 
