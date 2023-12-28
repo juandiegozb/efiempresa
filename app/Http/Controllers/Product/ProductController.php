@@ -9,6 +9,7 @@ use App\Repositories\Product\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
@@ -46,10 +47,14 @@ class ProductController extends Controller
         }
 
         foreach ($products as &$product) {
+
             $product['canPurchase'] = $product['stock'] > 0 && $product['status'];
-            $product['addToCart'] = [
-                'url' => route('product.addToCart', $product['id'])
-            ];
+
+            if ($product['canPurchase']) {
+                $product['addToCart'] = [
+                    'url' => route('product.addToCart', $product['id'])
+                ];
+            }
         }
 
         return response()->json([
@@ -61,6 +66,64 @@ class ProductController extends Controller
             ]
 
         ], 200);
+    }
+
+    /**
+     * Método encargado de actualizar un producto existente
+     * @param Request $request
+     * @param int $productId
+     * @return \Illuminate\Http\JsonResponse
+     * @author Juan Zambrano <juandiegozb@hotmail.com>
+     */
+    public function update(Request $request, int $productId): JsonResponse {
+
+        $user = Auth::guard('api')->user();
+
+        if ($user) {
+
+            $product = Product::find($productId);
+
+            if (!$product) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Producto no encontrado.',
+                ], 404);
+            }
+
+            if ($product->user_id !== $user->id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No tiene permisos para editar este producto.',
+                ], 403);
+            }
+
+            $request->validate([
+                'category_id' => 'required|exists:categories,id',
+                'name' => 'required|string',
+                'price' => 'required|numeric',
+                'stock' => 'required|integer',
+                'ean_13' => 'required|unique:products,ean_13,' . $productId . '|numeric',
+            ]);
+
+            $product->category_id = $request->input('category_id');
+            $product->name = $request->input('name');
+            $product->price = $request->input('price');
+            $product->stock = $request->input('stock');
+            $product->ean_13 = $request->input('ean_13');
+
+            $product->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Producto actualizado correctamente.',
+                'product' => $product,
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No tiene permisos para actualizar productos.',
+            ], 403);
+        }
     }
 
 
@@ -107,11 +170,11 @@ class ProductController extends Controller
     /**
      *  Método encargado de agregar un producto al carrito, solo está disponible en productos que no son del usuario autenticado
      * @param Request $request
-     * @param $productId
+     * @param int $productId
      * @return JsonResponse
      * @author Juan Zambrano <juandiegozb@hotmail.com>
      */
-    public function addProductToCart(Request $request, $productId): JsonResponse
+    public function addProductToCart(Request $request, int $productId): JsonResponse
     {
 
         if (Auth::guard('api')->check()) {
@@ -161,11 +224,11 @@ class ProductController extends Controller
 
     /**
      *  Método encargado de eliminar un recurso, si y solo si el usuario autenticado es el propietario del mismo.
-     * @param $productId
+     * @param int $productId
      * @return JsonResponse
      * @author Juan Zambrano <juandiegozb@hotmail.com>
      */
-    public function destroy($productId): JsonResponse
+    public function destroy(int $productId): JsonResponse
     {
 
         $product = Product::find($productId);

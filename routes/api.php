@@ -32,7 +32,7 @@ Route::group(['middleware' => ['auth:api'], 'prefix' => 'products'], function ()
 
     // ediciones básicas de las rutas sobre los productos
     Route::post('/create', [ProductController::class, 'store'])->name('product.store');
-    Route::put('/update/{productId}', [ProductController::class,'update'])->name('product.update');
+    Route::put('/update/{productId}', [ProductController::class, 'update'])->name('product.update');
     Route::delete('/destroy/{productId}', [ProductController::class,'destroy'])->name('product.destroy');
 
     // rutas de productos en el carrito de compras

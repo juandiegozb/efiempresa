@@ -1,66 +1,137 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Efiempresa API Documentation
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Get all Products
+- **Endpoint:** `/api/products/list`
+- **Method:** GET
+- **Authorization:** OAuth 2.0 - *opcional*
 
-## About Laravel
+- *Método para obtener todos los productos, es opcional usar el auth, pero para agregar al carrito de compras y que puedas ver opciones adicionales como url si es correcto autenticarse*
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Response:**
+  ```json
+  {
+      "status": "success",
+      "total_items": 2,
+      "data": {
+          "products": [
+              {
+                  "id": 4,
+                  "user_id": 3,
+                  "category_id": 1,
+                  "name": "Producto uno",
+                  "status": true,
+                  "price": "50.99",
+                  "stock": 3,
+                  "ean_13": "1234567891234",
+                  "created_at": "2023-12-28T02:20:05.000000Z",
+                  "updated_at": "2023-12-28T02:20:05.000000Z",
+                  "canPurchase": true
+              }
+          ],
+          "user_products": {
+              "1": {
+                  "id": 5,
+                  "user_id": 4,
+                  "category_id": 2,
+                  "name": "Macbook Pro 14 pulgadas",
+                  "status": true,
+                  "price": "1399.99",
+                  "stock": 10,
+                  "ean_13": "1234567891225",
+                  "created_at": "2023-12-28T02:29:31.000000Z",
+                  "updated_at": "2023-12-28T02:29:31.000000Z",
+                  "actions": {
+                      "edit": "http://localhost:8000/api/products/update/5",
+                      "delete": "http://localhost:8000/api/products/destroy/5"
+                  }
+              }
+          }
+      }
+  }
+  
+## Register a User
+- **Endpoint:** `/api/register`
+- **Method:** POST
+- **Request:**
+```json
+    {
+        "name": "usuario 1",
+        "email": "email_uno@correo.com",
+        "password": "qwertyas",
+        "password_confirmation": "qwertyas"
+    }
+```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Authorization:** None
+- **Descripción:** Metodo usado para registrar un usuario a la aplicación, como respuesta recibes un *JSON* con un **token** que usaras para las rutas privadas que lo necesiten.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+## Store a Product
+- **Endpoint:** `/api/products`
+- **Method:** POST
+- **Authorization:** OAuth 2.0
+- **Request:**
+```json
+{
+"category_id": 1,
+"name": "Producto uno",
+"price": 50.99,
+"stock": 3,
+"ean_13": 1234567891234
+}
+```
+- **Descripción:** *Método que usa para registrar un producto, esta ruta es privada y requiere que esté autenticado con el token compartido al momento de loguearse y/o registrarse al sistema*
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Login User
+- **Endpoint:** `api/login` 
+- **Method:** POST
+Request:
+```json
+{
+"email": "correo@dominio.com",
+"password": "asdf"
+}
+```
+- **Descripción:** *Se usa para loguearse al sistema **NO** es necesario el token, ya que al acceder esté metodo lo comparte*
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Logout User
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Endpoint:** `api/logout`
+- **Method:** GET
+- **Authorization:** Bearer Token
+- **Token:** OAuth 2.0
+- **Descripción:** *Elimina la sesión y el token del usuario autenticado, no es necesario ningun parametro SOLAMENTE el token
 
-## Laravel Sponsors
+## Delete a Product
+- **Endpoint:** `api/products/destroy/{id Producto}`
+- **Method:** DELETE
+- **Authorization:** OAuth 2.0
+- Elimina el producto con el **id** compartido, **NO** elimina productos que no sean del usuario autenticado, es **OBLIGATORIO** que estes autenticado para continuar con el proceso.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Add Product to Cart
+- **Endpoint:** `api/products/add-to-cart/{id producto}`
+- **Method:** POST
+- OAuth 2.0
+- **Authorization:** 
+- _Agrega productos al carrito de compras NO puede agregar sus propios productos, solo se agregan si cumplen con las condiciones:_
+ 1. el producto tiene un stock mayor a 0
+2. el producto tiene un status activo
+3. el producto es comprable comprable `canPurchase`
 
-### Premium Partners
+## Update a Product
+- **Endpoint:** `/api/products/update/{id producto}`
+- **Method:** PUT
+- **Authorization:** OAuth 2.0
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Request:
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```json
+{
+"category_id": 1,
+"name": "Nuevo producto editado",
+"price": 30.50,
+"stock": 50,
+"ean_13": "1234515892586"
+}
+```
+- _**Descripción:** Se crea el método que permite actualizar el producto, solo se puede modificar propios productos._
